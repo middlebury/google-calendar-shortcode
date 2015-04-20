@@ -44,9 +44,12 @@ function gcs_calendar( $atts ){
 		//****verify proper id****
 		$iframe .= 'src=' . trim( $id );
 		
-		$color = ( isset( $color_array[ $count ] ) ) ? $color_array[ $count ] : '2952A3'; //default color (Blue)
-		//****verify proper color, strip off # ***
-		$iframe .= '&amp;color=%23' . trim( $color );
+		if( isset( $color_array[ $count ] ) ){
+			$color = trim( $color_array[ $count ], " #\t\n\r\0\x0B" ); //strip off '#' as well as the usual space, etc
+			$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
+			$color = ( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) ? $color : '2952A3'; //check to be sure it's a hex code, if not use default Blue. *Note: Google at this time appears to only support color codes that match the choices they give.
+			$iframe .= '&amp;color=%23' . $color;
+		}
 
 		$count++;
 	}
