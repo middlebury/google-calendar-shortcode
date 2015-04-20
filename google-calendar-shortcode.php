@@ -33,7 +33,11 @@ function gcs_calendar( $atts ){
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
 	
 	if( isset( $atts[ 'title' ] ) ) $iframe .= 'title=' . $atts[ 'title' ] . '&amp;';
-	if( isset( $atts[ 'showtitle' ] ) && ( in_array( strtoupper($atts[ 'showtitle' ]), array( '0', 'NO', 'FALSE' ) ) ) )$iframe .= 'showTitle=0&amp;';
+	if( isset( $atts[ 'show_title' ] ) && in_array( strtoupper($atts[ 'show_title' ]), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTitle=0&amp;';
+	if( isset( $atts[ 'show_date' ] ) && in_array( strtoupper($atts[ 'show_date' ]), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showDate=0&amp;';
+	if( isset( $atts[ 'show_printicon' ] ) && in_array( strtoupper($atts[ 'show_printicon' ]), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showPrint=0&amp;';
+	if( isset( $atts[ 'show_calendarlist' ] ) && in_array( strtoupper($atts[ 'show_calendarlist' ]), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showCalendars=0&amp;';
+	if( isset( $atts[ 'show_timezone' ] ) && in_array( strtoupper($atts[ 'show_timezone' ]), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTz=0&amp;';
 	if( isset( $atts[ 'viewmode' ] ) ){
 		//echo'<p>Viewmode before:' . $atts[ 'viewmode' ] . '</p>';
 		$viewmode = strtoupper( $atts[ 'viewmode' ] );
