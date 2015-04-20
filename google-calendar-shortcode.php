@@ -69,16 +69,22 @@ function gcs_calendar( $atts ){
 		$iframe .= 'mode=' . $viewmode . '&amp;';
 	}
 	if( isset( $atts[ 'height' ] ) ) $iframe .= 'height=' . $atts[ 'height' ] . '&amp;';
-	if( isset( $atts[ 'weekstart' ] ) && ( in_array( strtoupper( $atts[ 'weekstart' ] ), $day_array ) || array_key_exists( $atts[ 'weekstart' ], $day_array ) ) ) {
-		if( !is_numeric( $atts[ 'weekstart' ] ) ) $weekstart = array_search( strtoupper( $atts[ 'weekstart' ] ), $day_array );
-		else $weekstart = $atts[ 'weekstart' ];
-		$iframe .= 'wkst=' . $weekstart . '&amp;';
+	if( isset( $atts[ 'weekstart' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'weekstart' ] ), $day_array ) || array_key_exists( $atts[ 'weekstart' ], $day_array ) ) { 
+			if( !is_numeric( $atts[ 'weekstart' ] ) ) $weekstart = array_search( strtoupper( $atts[ 'weekstart' ] ), $day_array );
+			else $weekstart = $atts[ 'weekstart' ];
+			$iframe .= 'wkst=' . $weekstart . '&amp;';
+		} else $errors[] = 'Invalid value for weekstart. Using default.';
 	}
-	if( isset( $atts[ 'language' ] ) && in_array( strtoupper( $atts[ 'language' ] ), $language_array ) ) $iframe .= 'hl=' . $atts[ 'language' ] . '&amp;';
+	if( isset( $atts[ 'language' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'language' ] ), $language_array ) ) $iframe .= 'hl=' . $atts[ 'language' ] . '&amp;';
+		else $errors[] = 'Invalid value for language. Using default.';
+	}
 	if( isset( $atts[ 'bgcolor' ] ) ){
 		$color = trim( $atts[ 'bgcolor' ], " #\t\n\r\0\x0B" ); //strip off '#' as well as the usual space, etc
 		$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
-		if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) $iframe .= 'bgcolor=%23' . $color . '&amp;'; //check to be sure it's a hex code. Otherwise don't use it and Google will default to white.		
+		if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) $iframe .= 'bgcolor=%23' . $color . '&amp;'; //check to be sure it's a hex code. Otherwise don't use it and Google will default to white.
+		else $errors[] = 'Invalid value for bgcolor. Using default.';
 	}
 	//do each of the given calendar ID(s) and match with the given color(s)
 	$count = 0;
@@ -105,7 +111,10 @@ function gcs_calendar( $atts ){
 	}
 	$iframe .= '"';
 	
-	if( isset( $atts[ 'show_border' ] ) && in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) ) $iframe .= ' style=" border:solid 1px #777 "';
+	if( isset( $atts[ 'show_border' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) ) $iframe .= ' style=" border:solid 1px #777 "';
+		else if( !in_array( strtoupper( $atts[ 'show_border' ] ), array( '0', 'NO', 'FALSE' ) ) ) $errors[] = 'Invalid value for show_border. Using default.';
+	}
 	$iframe .= ( isset( $atts[ 'width' ] ) ) ? ' width="' . $atts[ 'width' ] . '"' : ' width="100%"';
 	$iframe .= ( isset( $atts[ 'height' ] ) ) ? ' height="' . $atts[ 'height' ] . '"' : ' height="600px"';
 	$iframe .= '></iframe>';
