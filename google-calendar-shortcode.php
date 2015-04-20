@@ -8,11 +8,13 @@ Copyright: 2015 President and Fellows of Middlebury College
 License: Gnu General Public License V3 or later (GPL v3)
 */
 
-add_action( 'save_post', 'gcs_calendar_replace_iframe');
-function gcs_calendar_replace_iframe( $post_id ){
+add_filter( 'content_save_pre', 'gcs_calendar_replace_iframe');
+function gcs_calendar_replace_iframe( $content ){
 	global $wpdb;
-	$text = 'Post ID: ' . $post_id;
-	$wpdb->insert( 'debug', array( 'text' => $text ) );
+	//$text = 'Post ID: ' . $post_id;
+	$wpdb->insert( 'debug', array( 'text' => $content ) );
+
+	return $content;
 }
 
 add_shortcode('gcs_calendar','gcs_calendar');
