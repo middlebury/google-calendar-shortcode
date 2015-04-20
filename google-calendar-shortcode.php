@@ -7,10 +7,15 @@ Version: 1.0
 Copyright: 2015 President and Fellows of Middlebury College
 License: Gnu General Public License V3 or later (GPL v3)
 */
+
+add_action( 'save_post', 'gcs_calendar_replace_iframe');
+function gcs_calendar_replace_iframe( $post_id ){
+	global $wpdb;
+	$text = 'Post ID: ' . $post_id;
+	$wpdb->insert( 'debug', array( 'text' => $text ) );
+}
+
 add_shortcode('gcs_calendar','gcs_calendar');
-
-
-
 function gcs_calendar( $atts ){
 	ob_start();
 
