@@ -8,11 +8,26 @@ Copyright: 2015 President and Fellows of Middlebury College
 License: Gnu General Public License V3 or later (GPL v3)
 */
 
-add_filter( 'content_save_pre', 'gcs_calendar_replace_iframe');
+add_filter( 'content_save_pre', 'gcs_calendar_replace_iframe' );
 function gcs_calendar_replace_iframe( $content ){
+	
+	$start_offset = 0; //make it possible to loop and look for multiples
+	$start = strpos( $content, '<iframe src=\"https://www.google.com/calendar/embed', $start_offset );
+	if( $start === FALSE ) $start = strpos( $content, '&lt;iframe src=\"https://www.google.com/calendar/embed', $start_offset );
+	if( $start !== FALSE ){
+		$end = strpos( $content, '</iframe>', $start_offset + $start );
+		if( $end !== FALSE ) $end += 9;
+		else $end = strpos( $content, '&lt;/iframe&gt;', $start_offset + $start );
+		if( $end !== FALSE ) $end += 15;
+	}
+	if( $end ){
+		$length = $end - $start;
+		$iframe = substr( $content, $start, $length );
+	}
+	
 	global $wpdb;
-	//$text = 'Post ID: ' . $post_id;
-	$wpdb->insert( 'debug', array( 'text' => $content ) );
+	$text = 'Start: ' . $start . ' End: ' . $end . ' IFrame: ' . $iframe;
+	$wpdb->insert( 'debug', array( 'text' => $text ) );
 
 	return $content;
 }
