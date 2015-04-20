@@ -29,6 +29,7 @@ function gcs_calendar( $atts ){
 	$color_array = explode( ',', $colors);
 
 	$day_array = array( '1' => 'SUNDAY', '2' => 'MONDAY', '3' => 'TUESDAY', '4' => 'WEDNESDAY', '5' => 'THURSDAY', '6' => 'FRIDAY', '7' => 'SATURDAY' );
+	$language_array = array( 'ID','CA','CS','DA','DE','EN_GB','EN','ES','ES_419','FIL','FR','HR','IT','LV','LT','HU','NL','NO','PL','PT_BR','PT_PT','RO','SK','SL','FI','SV','TR','VI','EL','RU','SR','UK','BG','IW','AR','FA','HI','TH','ZH_TW','ZH_CN','JA','KO' );
 	
 	echo"\n<p>*Google Calendar*</p>";
 	
@@ -53,6 +54,7 @@ function gcs_calendar( $atts ){
 		else $weekstart = $atts[ 'weekstart' ];
 		$iframe .= 'wkst=' . $weekstart . '&amp;';
 	}
+	if( isset( $atts[ 'language' ] ) && in_array( strtoupper( $atts[ 'language' ] ), $language_array ) ) $iframe .= 'hl=' . $atts[ 'language' ] . '&amp;';
 
 	$count = 0;
 	foreach( $id_array as $id ){
@@ -81,7 +83,7 @@ function gcs_calendar( $atts ){
 
 	?>
 	***************
-	<iframe src="https://www.google.com/calendar/embed?mode=MONTH&amp;height=500&amp;wkst=7&amp;bgcolor=%23ffffff&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%235C1158&amp;src=en.usa%23holiday%40group.v.calendar.google.com&amp;color=%23AB8B00&amp;ctz=America%2FNew_York" style=" border-width:0 " width="800" height="500" frameborder="0" scrolling="no"></iframe>
+	<iframe src="https://www.google.com/calendar/embed?title=*TITLE*&amp;showTz=0&amp;height=500&amp;wkst=2&amp;hl=ZH_CN&amp;bgcolor=%23ffffff&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%235C1158&amp;src=en.usa%23holiday%40group.v.calendar.google.com&amp;color=%23AB8B00&amp;ctz=America%2FNew_York" style=" border-width:0 " width="800" height="500" frameborder="0" scrolling="no"></iframe>
 	<?php
 	$output = ob_get_contents();
 	ob_end_clean();
