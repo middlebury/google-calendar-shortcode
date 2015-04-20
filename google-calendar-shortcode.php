@@ -16,7 +16,7 @@ function gcs_calendar( $atts ){
 
 	echo'<p>';
 	foreach( $atts as $key => $value ){
-		$atts[ $key ] = trim( strip_tags( $value ) );
+		$atts[ strtolower( $key ) ] = trim( strip_tags( $value ) );
 		echo'<strong>' .  $key . '</strong>|' . $value . '|<br />';
 	}
 	echo'</p>';
@@ -27,16 +27,19 @@ function gcs_calendar( $atts ){
 	$colors = $atts[ 'color' ];
 	$color_array = explode( ',', $colors); 
 	
-	echo'<p>*Google Calendar*</p>';
+	echo"\n<p>*Google Calendar*</p>";
 	
-	//ob_start();
-
-	//$code = $atts[ 'code' ];
-
-	//$id = $atts[ 'id' ];
-	//echo'<p>*' . $id . '*</p>';
-
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
+	
+	if( isset( $atts[ 'viewmode' ] ) ){
+		//echo'<p>Viewmode before:' . $atts[ 'viewmode' ] . '</p>';
+		$viewmode = strtoupper( $atts[ 'viewmode' ] );
+		$viewmode = in_array( $viewmode, array( 'WEEK', 'MONTH', 'AGENDA' ) ) ? $viewmode : 'MONTH';
+		//echo'<p>Viewmode after:' . $viewmode . '</p>';
+		$iframe .= 'mode=' . $viewmode . '&amp;';
+	}
+	if( isset( $atts[ 'height' ] ) ) $iframe .= 'height=' . $atts[ 'height' ] . '&amp;';
+
 	$count = 0;
 	foreach( $id_array as $id ){
 		if( $count ) $iframe .= '&amp;';
@@ -53,12 +56,17 @@ function gcs_calendar( $atts ){
 
 		$count++;
 	}
-	
-	$iframe .= '" width="100%" height="600px"></iframe>';
+	$iframe .= '"';
+
+	if( isset( $atts[ 'width' ] ) )$iframe .= ' width="' . $atts[ 'width' ] . '"';
+	if( isset( $atts[ 'height' ] ) ) $iframe .= ' height="' . $atts[ 'height' ] . '"';
+	if( isset( $atts[ 'viewmode' ] ) ) $iframe .= ' height="' . $atts[ 'height' ] . '"';
+
+	$iframe .= '></iframe>';
 	echo $iframe;
 
 	?>
-	<!--<iframe src="https://www.google.com/calendar/embed?src=en.usa%23holiday%40group.v.calendar.google.com&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%23AB8B00" width="100%" height="600px"></iframe>-->
+	<iframe src="https://www.google.com/calendar/embed?mode=MONTH&amp;height=500&amp;wkst=1&amp;bgcolor=%23ffffff&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%235C1158&amp;src=en.usa%23holiday%40group.v.calendar.google.com&amp;color=%23AB8B00&amp;ctz=America%2FNew_York" style=" border-width:0 " width="800" height="500" frameborder="0" scrolling="no"></iframe>
 	<?php
 	$output = ob_get_contents();
 	ob_end_clean();
