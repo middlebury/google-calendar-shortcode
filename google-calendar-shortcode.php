@@ -22,6 +22,8 @@ function gcs_calendar( $atts ){
 	}
 	echo'</p>';
 
+	$errors = array();
+
 	$ids = $atts[ 'id' ];
 	$id_array = explode( ',', $ids);
 	
@@ -30,7 +32,8 @@ function gcs_calendar( $atts ){
 
 	$day_array = array( '1' => 'SUNDAY', '2' => 'MONDAY', '3' => 'TUESDAY', '4' => 'WEDNESDAY', '5' => 'THURSDAY', '6' => 'FRIDAY', '7' => 'SATURDAY' );
 	$language_array = array( 'ID','CA','CS','DA','DE','EN_GB','EN','ES','ES_419','FIL','FR','HR','IT','LV','LT','HU','NL','NO','PL','PT_BR','PT_PT','RO','SK','SL','FI','SV','TR','VI','EL','RU','SR','UK','BG','IW','AR','FA','HI','TH','ZH_TW','ZH_CN','JA','KO' );
-	
+	$country_array = gcs_countries(); //list too long to put here. Returned from function below.
+
 	echo"\n<p>*Google Calendar*</p>";
 	
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
@@ -60,9 +63,9 @@ function gcs_calendar( $atts ){
 		$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
 		if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) $iframe .= 'bgcolor=%23' . $color . '&amp;'; //check to be sure it's a hex code. Otherwise don't use it and Google will default to white.		
 	}
-
+	//do each of the given calendar ID(s) and match with the given color(s)
 	$count = 0;
-	foreach( $id_array as $id ){ //do each of the given calendar ID(s) and match with the given color(s)
+	foreach( $id_array as $id ){ 
 		if( $count ) $iframe .= '&amp;';		
 		$iframe .= 'src=' . trim( $id );		
 		if( isset( $color_array[ $count ] ) ){
@@ -73,8 +76,12 @@ function gcs_calendar( $atts ){
 		}
 		$count++;
 	}
+	if( isset( $atts[ 'timezone' ] ) ){
+		$timezone = str_replace( '%2F', '/', $atts[ 'timezone' ] ); //if user copy-pasted the %2F, convert it to a / for now so we can keep the array more readable
+		if( in_array( $timezone, $country_array ) ) $iframe .= '&amp;ctz=' . str_replace( '/', '%2F', $timezone );
+		else $errors[] = 'Invalid Timezone';
+	}
 	$iframe .= '"';
-
 	if( isset( $atts[ 'show_border' ] ) && in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) ) $iframe .= ' style=" border:solid 1px #777 "';
 	if( isset( $atts[ 'width' ] ) )$iframe .= ' width="' . $atts[ 'width' ] . '"';
 	if( isset( $atts[ 'height' ] ) ) $iframe .= ' height="' . $atts[ 'height' ] . '"';
@@ -84,12 +91,118 @@ function gcs_calendar( $atts ){
 
 	?>
 	***************
-	<iframe src="https://www.google.com/calendar/embed?title=*TITLE*&amp;showTz=0&amp;height=500&amp;wkst=2&amp;hl=tr&amp;bgcolor=%2355ff09&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%235C1158&amp;src=en.usa%23holiday%40group.v.calendar.google.com&amp;color=%23AB8B00&amp;ctz=America%2FNew_York" style=" border:solid 1px #777 " width="800" height="500" frameborder="0" scrolling="no"></iframe>
+	<iframe src="https://www.google.com/calendar/embed?title=*TITLE*&amp;height=500&amp;wkst=2&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%235C1158&amp;src=en.usa%23holiday%40group.v.calendar.google.com&amp;color=%23AB8B00&amp;ctz=America/Los_Angeles" style=" border:solid 1px #777 " width="800" height="500" frameborder="0" scrolling="no"></iframe>
+	
 	<?php
+	echo'<p>*' . get_option('timezone_string') . '*</p>';
 	$output = ob_get_contents();
 	ob_end_clean();
 	return $output;
 }
 
+function gcs_countries(){
+	return array(
+		'Pacific/Niue',
+		'Pacific/Pago_Pago',
+		'Pacific/Honolulu',
+		'Pacific/Rarotonga',
+		'Pacific/Tahiti',
+		'Pacific/Marquesas',
+		'America/Anchorage',
+		'Pacific/Gambier',
+		'America/Los_Angeles',
+		'America/Tijuana',
+		'America/Vancouver',
+		'America/Whitehorse',
+		'Pacific/Pitcairn',
+		'America/Dawson_Creek',
+		'America/Denver',
+		'America/Edmonton',
+		'America/Hermosillo',
+		'America/Mazatlan',
+		'America/Phoenix',
+		'America/Yellowknife',
+		'America/Belize',
+		'America/Chicago',
+		'America/Costa_Rica',
+		'America/El_Salvador',
+		'America/Guatemala',
+		'America/Managua',
+		'America/Mexico_City',
+		'America/Regina',
+		'America/Tegucigalpa',
+		'America/Winnipeg',
+		'Pacific/Galapagos',
+		'America/Bogota',
+		'America/Guayaquil',
+		'America/Havana',
+		'America/Iqaluit',
+		'America/Jamaica',
+		'America/Lima',
+		'America/Montreal',
+		'America/Nassau',
+		'America/New_York',
+		'America/Panama',
+		'America/Port-au-Prince',
+		'America/Rio_Branco',
+		'America/Toronto',
+		'Pacific/Easter',
+		'America/Caracas',
+		'America/Asuncion',
+		'America/Barbados',
+		'America/Boa_Vista',
+		'America/Campo_Grande',
+		'America/Cuiaba',
+		'America/Curacao',
+		'America/Grand_Turk',
+		'America/Guyana',
+		'America/Halifax',
+		'America/La_Paz',
+		'America/Manaus',
+		'America/Martinique',
+		'America/Port_of_Spain',
+		'America/Porto_Velho',
+		'America/Puerto_Rico',
+		'America/Santo_Domingo',
+		'America/Thule',
+		'Atlantic/Bermuda',
+		'America/St_Johns',
+		'America/Araguaina',
+		'America/Argentina/Buenos_Aires',
+		'America/Bahia',
+		'America/Belem',
+		'America/Cayenne',
+		'America/Fortaleza',
+		'America/Godthab',
+		'America/Maceio',
+		'America/Miquelon',
+		'America/Montevideo',
+		'America/Paramaribo',
+		'America/Recife',
+		'America/Santiago',
+		'America/Sao_Paulo',
+		'Antarctica/Palmer',
+		'Antarctica/Rothera',
+		'Atlantic/Stanley',
+		'America/Noronha',
+		'Atlantic/South_Georgia',
+		'America/Scoresbysund',
+		'Atlantic/Azores',
+		'Atlantic/Cape_Verde',
+		'Africa/Abidjan',
+		'Africa/Accra',
+		'Africa/Bissau',
+		'Africa/Casablanca',
+		'Africa/El_Aaiun',
+		'Africa/Monrovia',
+		'America/Danmarkshavn',
+		'Atlantic/Canary',
+		'Atlantic/Faroe',
+		'Atlantic/Reykjavik',
+		'Etc/GMT',
+		'Europe/Dublin',
+		'Europe/Lisbon'
+	);
+}
 
 ?>
