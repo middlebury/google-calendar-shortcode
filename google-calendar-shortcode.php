@@ -14,6 +14,7 @@ add_shortcode('gcs_calendar','gcs_calendar');
 function gcs_calendar( $atts ){
 	ob_start();
 
+	print_r($atts);
 	echo'<p>';
 	foreach( $atts as $key => $value ){
 		$atts[ strtolower( $key ) ] = trim( strip_tags( $value ) );
@@ -31,6 +32,8 @@ function gcs_calendar( $atts ){
 	
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
 	
+	if( isset( $atts[ 'title' ] ) ) $iframe .= 'title=' . $atts[ 'title' ] . '&amp;';
+	if( isset( $atts[ 'showtitle' ] ) && ( in_array( strtoupper($atts[ 'showtitle' ]), array( '0', 'NO', 'FALSE' ) ) ) )$iframe .= 'showTitle=0&amp;';
 	if( isset( $atts[ 'viewmode' ] ) ){
 		//echo'<p>Viewmode before:' . $atts[ 'viewmode' ] . '</p>';
 		$viewmode = strtoupper( $atts[ 'viewmode' ] );
