@@ -39,17 +39,32 @@ function gcs_calendar( $atts ){
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
 	
 	if( isset( $atts[ 'title' ] ) ) $iframe .= 'title=' . $atts[ 'title' ] . '&amp;';
-	if( isset( $atts[ 'show_title' ] ) && in_array( strtoupper( $atts[ 'show_title' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTitle=0&amp;';
-	if( isset( $atts[ 'show_date' ] ) && in_array( strtoupper( $atts[ 'show_date' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showDate=0&amp;';
-	if( isset( $atts[ 'show_printicon' ] ) && in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showPrint=0&amp;';
-	if( isset( $atts[ 'show_calendarlist' ] ) && in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showCalendars=0&amp;';
-	if( isset( $atts[ 'show_timezone' ] ) && in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTz=0&amp;';
+	if( isset( $atts[ 'show_title' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_title' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTitle=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_title' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_title. Using default.';
+	}
+	if( isset( $atts[ 'show_date' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_date' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showDate=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_date' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_date. Using default.';
+	}
+	if( isset( $atts[ 'show_printicon' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showPrint=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_printicon. Using default.';
+	}
+	if( isset( $atts[ 'show_calendarlist' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showCalendars=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_calendarlist. Using default.';
+	}
+	if( isset( $atts[ 'show_timezone' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTz=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_timezone. Using default.';
+	}
 	if( isset( $atts[ 'viewmode' ] ) ){
 		//echo'<p>Viewmode before:' . $atts[ 'viewmode' ] . '</p>';
 		$viewmode = strtoupper( $atts[ 'viewmode' ] );
 		if( !in_array( $viewmode, array( 'WEEK', 'MONTH', 'AGENDA' ) ) ) {
 			$viewmode = 'MONTH';
-			$errors[] = "Invalid viewmode. Using default.";
+			$errors[] = 'Invalid viewmode. Using default.';
 		}
 		$iframe .= 'mode=' . $viewmode . '&amp;';
 	}
@@ -76,7 +91,7 @@ function gcs_calendar( $atts ){
 				$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
 				if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) $iframe .= '&amp;color=%23' . $color;
 				else {
-					$errors[] = 'Invalid Color Code. Using default.';
+					$errors[] = 'Invalid value for color. Using default.';
 					$iframe .= '&amp;color=%232952A3';
 				}
 			}
