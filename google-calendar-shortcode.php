@@ -44,6 +44,28 @@ function gcs_calendar_replace_iframe( $content ){
 	foreach( $colors as $key => $value ){ //get rid of the %23 (#) if it's there, for readability
 		if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
 	}
+	
+	$shortcode = '[gcs_calendar';
+	if( count( $sources ) > 0 ){
+		$shortcode .= ' id="';
+		$count = 0;
+		foreach( $sources as $source ){
+			if( $count > 0 ) $shortcode .= ',';
+			$shortcode .= $source;
+			$count++;
+		}$shortcode .= '"';
+	}
+	if( count( $colors ) > 0 ){
+		$shortcode .= ' color="';
+		$count = 0;
+		foreach( $colors as $color ){
+			if( $count > 0 ) $shortcode .= ',';
+			$shortcode .= $color;
+			$count++;
+		}$shortcode .= '"';
+	}
+
+	$shortcode .= ']';
 
 	//$text = 'start: ' . $start . ' end: ' . $end . ' target: ' . $target;
 	//$wpdb->insert( 'debug', array( 'text' => $text ) );
