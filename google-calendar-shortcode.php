@@ -50,7 +50,7 @@ function google_calendar_shortcode_replace_iframe( $content ){
 			foreach( $sources as $source ){
 				if( $count > 0 )
 					$shortcode .= ',';
-				$shortcode .= $source;
+				$shortcode .= urldecode($source);
 				$count++;
 			}$shortcode .= '"';
 		}
