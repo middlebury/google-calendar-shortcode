@@ -20,55 +20,72 @@ function gcs_calendar_replace_iframe( $content ){
 		else $end = strpos( $content, '&lt;/iframe&gt;', $start_offset + $start );
 		if( $end !== FALSE ) $end += 15;
 	}
-	if( $end ){
+	if( isset( $end ) ){
 		$length = $end - $start;
 		$target = substr( $content, $start, $length );
-	}
-	$target = htmlspecialchars_decode( html_entity_decode( stripslashes( $target ) ) );
+		$target = html_entity_decode( stripslashes( $target ) );
 
-	$dom = new DOMDocument();
-	$dom->loadHTML( $target );
-	$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
-	$src = $iframe->getAttribute( 'src' );
-	$pieces = parse_url( $src );
-	parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
-	$parts = explode( '&' , $pieces[ 'query' ] );
-	$sources = array();
-	foreach( $parts as $part ){
-		if( strpos( $part, 'src=' ) === 0 ) $sources[] = substr( $part, 4 );
-	}
-	$colors = array();
-	foreach( $parts as $part ){
-		if( strpos( $part, 'color=' ) === 0 ) $colors[] = substr( $part, 6 );
-	}
-	foreach( $colors as $key => $value ){ //get rid of the %23 (#) if it's there, for readability
-		if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
-	}
-	
-	$shortcode = '[gcs_calendar';
-	if( count( $sources ) > 0 ){
-		$shortcode .= ' id="';
-		$count = 0;
-		foreach( $sources as $source ){
-			if( $count > 0 ) $shortcode .= ',';
-			$shortcode .= $source;
-			$count++;
-		}$shortcode .= '"';
-	}
-	if( count( $colors ) > 0 ){
-		$shortcode .= ' color="';
-		$count = 0;
-		foreach( $colors as $color ){
-			if( $count > 0 ) $shortcode .= ',';
-			$shortcode .= $color;
-			$count++;
-		}$shortcode .= '"';
-	}
+		$dom = new DOMDocument();
+		$dom->loadHTML( $target );
+		$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
+		$src = $iframe->getAttribute( 'src' );
+		$pieces = parse_url( $src );
+		parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
+		$parts = explode( '&' , $pieces[ 'query' ] );
+		$sources = array();
+		foreach( $parts as $part ){
+			if( strpos( $part, 'src=' ) === 0 ) $sources[] = substr( $part, 4 );
+		}
+		$colors = array();
+		foreach( $parts as $part ){
+			if( strpos( $part, 'color=' ) === 0 ) $colors[] = substr( $part, 6 );
+		}
+		foreach( $colors as $key => $value ){
+			if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
+		}
+		
 
-	$shortcode .= ']';
+		$shortcode = '[gcs_calendar';
+		if( count( $sources ) > 0 ){
+			$shortcode .= ' id="';
+			$count = 0;
+			foreach( $sources as $source ){
+				if( $count > 0 ) $shortcode .= ',';
+				$shortcode .= $source;
+				$count++;
+			}$shortcode .= '"';
+		}
+		if( count( $colors ) > 0 ){
+			$shortcode .= ' color="';
+			$count = 0;
+			foreach( $colors as $color ){
+				if( $count > 0 ) $shortcode .= ',';
+				$shortcode .= $color;
+				$count++;
+			}$shortcode .= '"';
+		}
+		if( strlen( $iframe->getAttribute( 'width' ) ) ) $shortcode .= ' width="' . $iframe->getAttribute( 'width' ) . '"';
+		if( isset( $var_array[ 'height' ] ) ) $shortcode .= ' height="' . $var_array[ 'height' ] . '"';
+		if( isset( $var_array[ 'mode' ] ) ) $shortcode .= ' viewmode="' . $var_array[ 'mode' ] . '"';
+		if( isset( $var_array[ 'title' ] ) ) $shortcode .= ' title="' . htmlentities( $var_array[ 'title' ] ) . '"';
+		if( isset( $var_array[ 'showTitle' ] ) ) $shortcode .= ' show_title="' . $var_array[ 'showTitle' ] . '"';
+		if( isset( $var_array[ 'showDate' ] ) ) $shortcode .= ' show_date="' . $var_array[ 'showDate' ] . '"';
+		if( isset( $var_array[ 'showPrint' ] ) ) $shortcode .= ' show_printicon="' . $var_array[ 'showPrint' ] . '"';
+		if( isset( $var_array[ 'showCalendars' ] ) ) $shortcode .= ' show_calendarlist="' . $var_array[ 'showCalendars' ] . '"';
+		if( isset( $var_array[ 'showTz' ] ) ) $shortcode .= ' show_timezone="' . $var_array[ 'showTz' ] . '"';
+		if( isset( $var_array[ 'wkst' ] ) ) $shortcode .= ' weekstart="' . $var_array[ 'wkst' ] . '"';
+		if( isset( $var_array[ 'hl' ] ) ) $shortcode .= ' language="' . $var_array[ 'hl' ] . '"';
+		if( isset( $var_array[ 'bgcolor' ] ) ) $shortcode .= ' bgcolor="' . $var_array[ 'bgcolor' ] . '"';
+		if( strlen( $iframe->getAttribute( 'style' ) ) && strpos( $iframe->getAttribute( 'style' ), 'border:solid' ) !== FALSE ) $shortcode .= ' show_border="true"';
+		if( isset( $var_array[ 'ctz' ] ) ) $shortcode .= ' timezone="' . $var_array[ 'ctz' ] . '"';
 
-	//$text = 'start: ' . $start . ' end: ' . $end . ' target: ' . $target;
-	//$wpdb->insert( 'debug', array( 'text' => $text ) );
+		$shortcode .= ']';
+
+		$content = substr_replace( $content, $shortcode, $start, $length );
+
+		//$text = 'start: ' . $start . ' end: ' . $end . ' target: ' . $target;
+		//$wpdb->insert( 'debug', array( 'text' => $text ) );
+	}
 
 	return $content;
 }
