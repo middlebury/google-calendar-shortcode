@@ -22,12 +22,28 @@ function gcs_calendar_replace_iframe( $content ){
 	}
 	if( $end ){
 		$length = $end - $start;
-		$iframe = substr( $content, $start, $length );
+		$target = substr( $content, $start, $length );
 	}
+	$target = htmlspecialchars_decode( html_entity_decode( stripslashes( $target ) ) );
+
+	$dom = new DOMDocument();
+	$dom->loadHTML( $target );
+	$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
+	$src = $iframe->getAttribute( 'src' );
+	$pieces = parse_url( $src );
+	parse_str( $pieces[ 'query' ], $var_array );
+
+	//$shortcode = '[gcs_calendar ';
+	//if( isset( $var_array[ 
 	
 	global $wpdb;
-	$text = 'Start: ' . $start . ' End: ' . $end . ' IFrame: ' . $iframe;
+	$text = '';
+	foreach( $var_array as $key => $value ){
+		$text .= ' | ' . $key . ': ' . $value;
+	}
 	$wpdb->insert( 'debug', array( 'text' => $text ) );
+	//$text = 'start: ' . $start . ' end: ' . $end . ' target: ' . $target;
+	//$wpdb->insert( 'debug', array( 'text' => $text ) );
 
 	return $content;
 }
