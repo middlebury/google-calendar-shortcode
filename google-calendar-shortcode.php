@@ -94,14 +94,10 @@ add_shortcode('gcs_calendar','gcs_calendar');
 function gcs_calendar( $atts ){
 	ob_start();
 
-	print_r($atts);
-	echo'<p>';
 	foreach( $atts as $key => $value ){
-		$atts[ strtolower( $key ) ] = trim( strip_tags( $value ) );
-		echo'<strong>' .  $key . '</strong>|' . $value . '|<br />';
+		$atts[ $key ] = strip_tags( $value );
 	}
-	echo'</p>';
-
+	$atts[ 'title'] = urlencode( html_entity_decode( $atts[ 'title'] ) );
 	$errors = array();
 
 	$ids = $atts[ 'id' ];
@@ -114,8 +110,6 @@ function gcs_calendar( $atts ){
 	$language_array = array( 'ID','CA','CS','DA','DE','EN_GB','EN','ES','ES_419','FIL','FR','HR','IT','LV','LT','HU','NL','NO','PL','PT_BR','PT_PT','RO','SK','SL','FI','SV','TR','VI','EL','RU','SR','UK','BG','IW','AR','FA','HI','TH','ZH_TW','ZH_CN','JA','KO' );
 	$country_array = gcs_countries(); //list too long to put here. Returned from function below.
 
-	echo"\n<p>*Google Calendar*</p>";
-	
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
 	
 	if( isset( $atts[ 'title' ] ) ) $iframe .= 'title=' . $atts[ 'title' ] . '&amp;';
@@ -140,7 +134,6 @@ function gcs_calendar( $atts ){
 		else if( !in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_timezone. Using default.';
 	}
 	if( isset( $atts[ 'viewmode' ] ) ){
-		//echo'<p>Viewmode before:' . $atts[ 'viewmode' ] . '</p>';
 		$viewmode = strtoupper( $atts[ 'viewmode' ] );
 		if( !in_array( $viewmode, array( 'WEEK', 'MONTH', 'AGENDA' ) ) ) {
 			$viewmode = 'MONTH';
@@ -210,13 +203,7 @@ function gcs_calendar( $atts ){
 		foreach( $errors as $error) echo"<small>" . $error . "</small><br />\n";
 		echo'</div><!--//.error gcs_errors-->' . "\n";
 	}
-	?>
-	***************
-	<iframe src="https://www.google.com/calendar/embed?title=*TITLE*&amp;height=500&amp;wkst=2&amp;src=9pk4g9evvbabravigk2ek4fius%40group.calendar.google.com&amp;color=%235C1158&amp;src=en.usa%23holiday%40group.v.calendar.google.com&amp;color=%23FF0000&amp;ctz=America/Los_Angeles" style=" border:solid 1px #777 " width="800" height="500" frameborder="0" scrolling="no"></iframe>
-	
-	<?php
-	//echo'<p>*' . get_option('timezone_string') . '*</p>';
-	echo'<p>Errors:' . print_r( $errors ) . '</p>';
+
 	$output = ob_get_contents();
 	ob_end_clean();
 	return $output;
