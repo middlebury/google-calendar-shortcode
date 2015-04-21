@@ -31,17 +31,20 @@ function gcs_calendar_replace_iframe( $content ){
 	$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
 	$src = $iframe->getAttribute( 'src' );
 	$pieces = parse_url( $src );
-	parse_str( $pieces[ 'query' ], $var_array );
-
-	//$shortcode = '[gcs_calendar ';
-	//if( isset( $var_array[ 
-	
-	global $wpdb;
-	$text = '';
-	foreach( $var_array as $key => $value ){
-		$text .= ' | ' . $key . ': ' . $value;
+	parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
+	$parts = explode( '&' , $pieces[ 'query' ] );
+	$sources = array();
+	foreach( $parts as $part ){
+		if( strpos( $part, 'src=' ) === 0 ) $sources[] = substr( $part, 4 );
 	}
-	$wpdb->insert( 'debug', array( 'text' => $text ) );
+	$colors = array();
+	foreach( $parts as $part ){
+		if( strpos( $part, 'color=' ) === 0 ) $colors[] = substr( $part, 6 );
+	}
+	foreach( $colors as $key => $value ){ //get rid of the %23 (#) if it's there, for readability
+		if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
+	}
+
 	//$text = 'start: ' . $start . ' end: ' . $end . ' target: ' . $target;
 	//$wpdb->insert( 'debug', array( 'text' => $text ) );
 
