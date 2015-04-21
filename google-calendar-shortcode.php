@@ -11,81 +11,84 @@ License: Gnu General Public License V3 or later (GPL v3)
 add_filter( 'content_save_pre', 'gcs_calendar_replace_iframe' );
 function gcs_calendar_replace_iframe( $content ){
 	
-	$start_offset = 0; //make it possible to loop and look for multiples
-	$start = strpos( $content, '<iframe src=\"https://www.google.com/calendar/embed', $start_offset );
-	if( $start === FALSE ) $start = strpos( $content, '&lt;iframe src=\"https://www.google.com/calendar/embed', $start_offset );
-	if( $start !== FALSE ){
-		$end = strpos( $content, '</iframe>', $start_offset + $start );
-		if( $end !== FALSE ) $end += 9;
-		else $end = strpos( $content, '&lt;/iframe&gt;', $start_offset + $start );
-		if( $end !== FALSE ) $end += 15;
-	}
-	if( isset( $end ) ){
-		$length = $end - $start;
-		$target = substr( $content, $start, $length );
-		$target = html_entity_decode( stripslashes( $target ) );
+	do{
+		$shortcode = '';
 
-		$dom = new DOMDocument();
-		$dom->loadHTML( $target );
-		$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
-		$src = $iframe->getAttribute( 'src' );
-		$pieces = parse_url( $src );
-		parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
-		$parts = explode( '&' , $pieces[ 'query' ] );
-		$sources = array();
-		foreach( $parts as $part ){
-			if( strpos( $part, 'src=' ) === 0 ) $sources[] = substr( $part, 4 );
+		$start = strpos( $content, '<iframe src=\"https://www.google.com/calendar/embed' );
+		if( $start === FALSE ) $start = strpos( $content, '&lt;iframe src=\"https://www.google.com/calendar/embed' );
+		if( $start !== FALSE ){
+			$end = strpos( $content, '</iframe>', $start );
+			if( $end !== FALSE ) $end += 9;
+			else $end = strpos( $content, '&lt;/iframe&gt;', $start );
+			if( $end !== FALSE ) $end += 15;
 		}
-		$colors = array();
-		foreach( $parts as $part ){
-			if( strpos( $part, 'color=' ) === 0 ) $colors[] = substr( $part, 6 );
-		}
-		foreach( $colors as $key => $value ){
-			if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
-		}
-		
+		if( isset( $end ) ){
+			$length = $end - $start;
+			$target = substr( $content, $start, $length );
+			$target = html_entity_decode( stripslashes( $target ) );
 
-		$shortcode = '[gcs_calendar';
-		if( count( $sources ) > 0 ){
-			$shortcode .= ' id="';
-			$count = 0;
-			foreach( $sources as $source ){
-				if( $count > 0 ) $shortcode .= ',';
-				$shortcode .= $source;
-				$count++;
-			}$shortcode .= '"';
+			$dom = new DOMDocument();
+			$dom->loadHTML( $target );
+			$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
+			$src = $iframe->getAttribute( 'src' );
+			$pieces = parse_url( $src );
+			parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
+			$parts = explode( '&' , $pieces[ 'query' ] );
+			$sources = array();
+			foreach( $parts as $part ){
+				if( strpos( $part, 'src=' ) === 0 ) $sources[] = substr( $part, 4 );
+			}
+			$colors = array();
+			foreach( $parts as $part ){
+				if( strpos( $part, 'color=' ) === 0 ) $colors[] = substr( $part, 6 );
+			}
+			foreach( $colors as $key => $value ){
+				if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
+			}
+			
+
+			$shortcode = '[gcs_calendar';
+			if( count( $sources ) > 0 ){
+				$shortcode .= ' id="';
+				$count = 0;
+				foreach( $sources as $source ){
+					if( $count > 0 ) $shortcode .= ',';
+					$shortcode .= $source;
+					$count++;
+				}$shortcode .= '"';
+			}
+			if( count( $colors ) > 0 ){
+				$shortcode .= ' color="';
+				$count = 0;
+				foreach( $colors as $color ){
+					if( $count > 0 ) $shortcode .= ',';
+					$shortcode .= $color;
+					$count++;
+				}$shortcode .= '"';
+			}
+			if( strlen( $iframe->getAttribute( 'width' ) ) ) $shortcode .= ' width="' . $iframe->getAttribute( 'width' ) . '"';
+			if( isset( $var_array[ 'height' ] ) ) $shortcode .= ' height="' . $var_array[ 'height' ] . '"';
+			if( isset( $var_array[ 'mode' ] ) ) $shortcode .= ' viewmode="' . $var_array[ 'mode' ] . '"';
+			if( isset( $var_array[ 'title' ] ) ) $shortcode .= ' title="' . htmlentities( $var_array[ 'title' ] ) . '"';
+			if( isset( $var_array[ 'showTitle' ] ) ) $shortcode .= ' show_title="' . $var_array[ 'showTitle' ] . '"';
+			if( isset( $var_array[ 'showDate' ] ) ) $shortcode .= ' show_date="' . $var_array[ 'showDate' ] . '"';
+			if( isset( $var_array[ 'showPrint' ] ) ) $shortcode .= ' show_printicon="' . $var_array[ 'showPrint' ] . '"';
+			if( isset( $var_array[ 'showTabs' ] ) ) $shortcode .= ' show_tabs="' . $var_array[ 'showTabs' ] . '"';
+			if( isset( $var_array[ 'showCalendars' ] ) ) $shortcode .= ' show_calendarlist="' . $var_array[ 'showCalendars' ] . '"';
+			if( isset( $var_array[ 'showTz' ] ) ) $shortcode .= ' show_timezone="' . $var_array[ 'showTz' ] . '"';
+			if( isset( $var_array[ 'wkst' ] ) ) $shortcode .= ' weekstart="' . $var_array[ 'wkst' ] . '"';
+			if( isset( $var_array[ 'hl' ] ) ) $shortcode .= ' language="' . $var_array[ 'hl' ] . '"';
+			if( isset( $var_array[ 'bgcolor' ] ) ) $shortcode .= ' bgcolor="' . $var_array[ 'bgcolor' ] . '"';
+			if( strlen( $iframe->getAttribute( 'style' ) ) && strpos( $iframe->getAttribute( 'style' ), 'border:solid' ) !== FALSE ) $shortcode .= ' show_border="true"';
+			if( isset( $var_array[ 'ctz' ] ) ) $shortcode .= ' timezone="' . $var_array[ 'ctz' ] . '"';
+
+			$shortcode .= ']';
+
+			$content = substr_replace( $content, $shortcode, $start, $length );
 		}
-		if( count( $colors ) > 0 ){
-			$shortcode .= ' color="';
-			$count = 0;
-			foreach( $colors as $color ){
-				if( $count > 0 ) $shortcode .= ',';
-				$shortcode .= $color;
-				$count++;
-			}$shortcode .= '"';
-		}
-		if( strlen( $iframe->getAttribute( 'width' ) ) ) $shortcode .= ' width="' . $iframe->getAttribute( 'width' ) . '"';
-		if( isset( $var_array[ 'height' ] ) ) $shortcode .= ' height="' . $var_array[ 'height' ] . '"';
-		if( isset( $var_array[ 'mode' ] ) ) $shortcode .= ' viewmode="' . $var_array[ 'mode' ] . '"';
-		if( isset( $var_array[ 'title' ] ) ) $shortcode .= ' title="' . htmlentities( $var_array[ 'title' ] ) . '"';
-		if( isset( $var_array[ 'showTitle' ] ) ) $shortcode .= ' show_title="' . $var_array[ 'showTitle' ] . '"';
-		if( isset( $var_array[ 'showDate' ] ) ) $shortcode .= ' show_date="' . $var_array[ 'showDate' ] . '"';
-		if( isset( $var_array[ 'showPrint' ] ) ) $shortcode .= ' show_printicon="' . $var_array[ 'showPrint' ] . '"';
-		if( isset( $var_array[ 'showCalendars' ] ) ) $shortcode .= ' show_calendarlist="' . $var_array[ 'showCalendars' ] . '"';
-		if( isset( $var_array[ 'showTz' ] ) ) $shortcode .= ' show_timezone="' . $var_array[ 'showTz' ] . '"';
-		if( isset( $var_array[ 'wkst' ] ) ) $shortcode .= ' weekstart="' . $var_array[ 'wkst' ] . '"';
-		if( isset( $var_array[ 'hl' ] ) ) $shortcode .= ' language="' . $var_array[ 'hl' ] . '"';
-		if( isset( $var_array[ 'bgcolor' ] ) ) $shortcode .= ' bgcolor="' . $var_array[ 'bgcolor' ] . '"';
-		if( strlen( $iframe->getAttribute( 'style' ) ) && strpos( $iframe->getAttribute( 'style' ), 'border:solid' ) !== FALSE ) $shortcode .= ' show_border="true"';
-		if( isset( $var_array[ 'ctz' ] ) ) $shortcode .= ' timezone="' . $var_array[ 'ctz' ] . '"';
-
-		$shortcode .= ']';
-
-		$content = substr_replace( $content, $shortcode, $start, $length );
-
-		//$text = 'start: ' . $start . ' end: ' . $end . ' target: ' . $target;
-		//$wpdb->insert( 'debug', array( 'text' => $text ) );
-	}
+		unset( $start );
+		unset( $end );
+	} while ( strlen( $shortcode ) );
 
 	return $content;
 }
@@ -124,6 +127,10 @@ function gcs_calendar( $atts ){
 	if( isset( $atts[ 'show_printicon' ] ) ) {
 		if( in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showPrint=0&amp;';
 		else if( !in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_printicon. Using default.';
+	}
+	if( isset( $atts[ 'show_tabs' ] ) ) {
+		if( in_array( strtoupper( $atts[ 'show_tabs' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTabs=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_tabs' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_tabs. Using default.';
 	}
 	if( isset( $atts[ 'show_calendarlist' ] ) ) {
 		if( in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showCalendars=0&amp;';
