@@ -7,94 +7,103 @@ Version: 1.0
 Copyright: 2015 President and Fellows of Middlebury College
 License: Gnu General Public License V3 or later (GPL v3)
 */
+add_action( 'wp_enqueue_scripts', 'google_calendar_shortcodes_add_styles' );
+function google_calendar_shortcodes_add_styles(){
+	global $wp_styles;
 
-add_filter( 'content_save_pre', 'gcs_calendar_replace_iframe' );
-function gcs_calendar_replace_iframe( $content ){
+	wp_add_inline_style( $wp_styles->queue[0], 'div.google-calendar-shortcode-errors strong{ color: red }' );
+}
+
+add_filter( 'content_save_pre', 'google_calendar_shortcode_replace_iframe' );
+function google_calendar_shortcode_replace_iframe( $content ){
 	
-	do{
-		$shortcode = '';
-
-		$start = strpos( $content, '<iframe src=\"https://www.google.com/calendar/embed' );
-		if( $start === FALSE ) $start = strpos( $content, '&lt;iframe src=\"https://www.google.com/calendar/embed' );
-		if( $start !== FALSE ){
-			$end = strpos( $content, '</iframe>', $start );
-			if( $end !== FALSE ) $end += 9;
-			else $end = strpos( $content, '&lt;/iframe&gt;', $start );
-			if( $end !== FALSE ) $end += 15;
+    preg_match_all('#(?:<|&lt;)iframe src=\\\"https://www.google.com/calendar/embed.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
+	foreach( $matches[0] as $match ) {
+		$html = html_entity_decode( stripslashes( $match ) );
+		$dom = new DOMDocument();
+		$dom->loadHTML( $html );
+		$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
+		$src = $iframe->getAttribute( 'src' );
+		$pieces = parse_url( $src );
+		parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
+		$parts = explode( '&' , $pieces[ 'query' ] );
+		$sources = array();
+		foreach( $parts as $part ){
+			if( strpos( $part, 'src=' ) === 0 )
+				$sources[] = substr( $part, 4 );
 		}
-		if( isset( $end ) ){
-			$length = $end - $start;
-			$target = substr( $content, $start, $length );
-			$target = html_entity_decode( stripslashes( $target ) );
-
-			$dom = new DOMDocument();
-			$dom->loadHTML( $target );
-			$iframe = $dom->getElementsByTagName( 'iframe' )->item( 0 );
-			$src = $iframe->getAttribute( 'src' );
-			$pieces = parse_url( $src );
-			parse_str( $pieces[ 'query' ], $var_array ); //this will overwrite multiple src and color, so do those next
-			$parts = explode( '&' , $pieces[ 'query' ] );
-			$sources = array();
-			foreach( $parts as $part ){
-				if( strpos( $part, 'src=' ) === 0 ) $sources[] = substr( $part, 4 );
-			}
-			$colors = array();
-			foreach( $parts as $part ){
-				if( strpos( $part, 'color=' ) === 0 ) $colors[] = substr( $part, 6 );
-			}
-			foreach( $colors as $key => $value ){
-				if( strpos( $value, '%23' ) === 0 ) $colors[ $key ] = substr( $value, 3 );
-			}
-			
-
-			$shortcode = '[gcs_calendar';
-			if( count( $sources ) > 0 ){
-				$shortcode .= ' id="';
-				$count = 0;
-				foreach( $sources as $source ){
-					if( $count > 0 ) $shortcode .= ',';
-					$shortcode .= $source;
-					$count++;
-				}$shortcode .= '"';
-			}
-			if( count( $colors ) > 0 ){
-				$shortcode .= ' color="';
-				$count = 0;
-				foreach( $colors as $color ){
-					if( $count > 0 ) $shortcode .= ',';
-					$shortcode .= $color;
-					$count++;
-				}$shortcode .= '"';
-			}
-			if( strlen( $iframe->getAttribute( 'width' ) ) ) $shortcode .= ' width="' . $iframe->getAttribute( 'width' ) . '"';
-			if( isset( $var_array[ 'height' ] ) ) $shortcode .= ' height="' . $var_array[ 'height' ] . '"';
-			if( isset( $var_array[ 'mode' ] ) ) $shortcode .= ' viewmode="' . $var_array[ 'mode' ] . '"';
-			if( isset( $var_array[ 'title' ] ) ) $shortcode .= ' title="' . htmlentities( $var_array[ 'title' ] ) . '"';
-			if( isset( $var_array[ 'showTitle' ] ) ) $shortcode .= ' show_title="' . $var_array[ 'showTitle' ] . '"';
-			if( isset( $var_array[ 'showDate' ] ) ) $shortcode .= ' show_date="' . $var_array[ 'showDate' ] . '"';
-			if( isset( $var_array[ 'showPrint' ] ) ) $shortcode .= ' show_printicon="' . $var_array[ 'showPrint' ] . '"';
-			if( isset( $var_array[ 'showTabs' ] ) ) $shortcode .= ' show_tabs="' . $var_array[ 'showTabs' ] . '"';
-			if( isset( $var_array[ 'showCalendars' ] ) ) $shortcode .= ' show_calendarlist="' . $var_array[ 'showCalendars' ] . '"';
-			if( isset( $var_array[ 'showTz' ] ) ) $shortcode .= ' show_timezone="' . $var_array[ 'showTz' ] . '"';
-			if( isset( $var_array[ 'wkst' ] ) ) $shortcode .= ' weekstart="' . $var_array[ 'wkst' ] . '"';
-			if( isset( $var_array[ 'hl' ] ) ) $shortcode .= ' language="' . $var_array[ 'hl' ] . '"';
-			if( isset( $var_array[ 'bgcolor' ] ) ) $shortcode .= ' bgcolor="' . $var_array[ 'bgcolor' ] . '"';
-			if( strlen( $iframe->getAttribute( 'style' ) ) && strpos( $iframe->getAttribute( 'style' ), 'border:solid' ) !== FALSE ) $shortcode .= ' show_border="true"';
-			if( isset( $var_array[ 'ctz' ] ) ) $shortcode .= ' timezone="' . $var_array[ 'ctz' ] . '"';
-
-			$shortcode .= ']';
-
-			$content = substr_replace( $content, $shortcode, $start, $length );
+		$colors = array();
+		foreach( $parts as $part ){
+			if( strpos( $part, 'color=' ) === 0 )
+				$colors[] = substr( $part, 6 );
 		}
-		unset( $start );
-		unset( $end );
-	} while ( strlen( $shortcode ) );
+		foreach( $colors as $key => $value ){
+			if( strpos( $value, '%23' ) === 0 )
+				$colors[ $key ] = substr( $value, 3 );
+		}
+		
 
+		$shortcode = '[google_calendar';
+		if( count( $sources ) > 0 ){
+			$shortcode .= ' id="';
+			$count = 0;
+			foreach( $sources as $source ){
+				if( $count > 0 )
+					$shortcode .= ',';
+				$shortcode .= $source;
+				$count++;
+			}$shortcode .= '"';
+		}
+		if( count( $colors ) > 0 ){
+			$shortcode .= ' color="';
+			$count = 0;
+			foreach( $colors as $color ){
+				if( $count > 0 )
+					$shortcode .= ',';
+				$shortcode .= $color;
+				$count++;
+			}$shortcode .= '"';
+		}
+		if( strlen( $iframe->getAttribute( 'width' ) ) )
+			$shortcode .= ' width="' . $iframe->getAttribute( 'width' ) . '"';
+		if( isset( $var_array[ 'height' ] ) )
+			$shortcode .= ' height="' . $var_array[ 'height' ] . '"';
+		if( isset( $var_array[ 'mode' ] ) )
+			$shortcode .= ' viewmode="' . $var_array[ 'mode' ] . '"';
+		if( isset( $var_array[ 'title' ] ) )
+			$shortcode .= ' title="' . htmlentities( $var_array[ 'title' ] ) . '"';
+		if( isset( $var_array[ 'showTitle' ] ) )
+			$shortcode .= ' show_title="' . $var_array[ 'showTitle' ] . '"';
+		if( isset( $var_array[ 'showDate' ] ) )
+			$shortcode .= ' show_date="' . $var_array[ 'showDate' ] . '"';
+		if( isset( $var_array[ 'showPrint' ] ) )
+			$shortcode .= ' show_printicon="' . $var_array[ 'showPrint' ] . '"';
+		if( isset( $var_array[ 'showTabs' ] ) )
+			$shortcode .= ' show_tabs="' . $var_array[ 'showTabs' ] . '"';
+		if( isset( $var_array[ 'showCalendars' ] ) )
+			$shortcode .= ' show_calendarlist="' . $var_array[ 'showCalendars' ] . '"';
+		if( isset( $var_array[ 'showTz' ] ) )
+			$shortcode .= ' show_timezone="' . $var_array[ 'showTz' ] . '"';
+		if( isset( $var_array[ 'wkst' ] ) )
+			$shortcode .= ' weekstart="' . $var_array[ 'wkst' ] . '"';
+		if( isset( $var_array[ 'hl' ] ) )
+			$shortcode .= ' language="' . $var_array[ 'hl' ] . '"';
+		if( isset( $var_array[ 'bgcolor' ] ) )
+			$shortcode .= ' bgcolor="' . $var_array[ 'bgcolor' ] . '"';
+		if( strlen( $iframe->getAttribute( 'style' ) ) && strpos( $iframe->getAttribute( 'style' ), 'border:solid' ) !== FALSE )
+			$shortcode .= ' show_border="true"';
+		if( isset( $var_array[ 'ctz' ] ) )
+			$shortcode .= ' timezone="' . $var_array[ 'ctz' ] . '"';
+
+		$shortcode .= ']';
+		$content = str_replace( $match, $shortcode, $content );
+	}
 	return $content;
 }
 
-add_shortcode('gcs_calendar','gcs_calendar');
-function gcs_calendar( $atts ){
+add_shortcode('google_calendar','google_calendar_shortcode');
+function google_calendar_shortcode( $atts ){
+
 	ob_start();
 
 	foreach( $atts as $key => $value ){
@@ -111,34 +120,47 @@ function gcs_calendar( $atts ){
 
 	$day_array = array( '1' => 'SUNDAY', '2' => 'MONDAY', '3' => 'TUESDAY', '4' => 'WEDNESDAY', '5' => 'THURSDAY', '6' => 'FRIDAY', '7' => 'SATURDAY' );
 	$language_array = array( 'ID','CA','CS','DA','DE','EN_GB','EN','ES','ES_419','FIL','FR','HR','IT','LV','LT','HU','NL','NO','PL','PT_BR','PT_PT','RO','SK','SL','FI','SV','TR','VI','EL','RU','SR','UK','BG','IW','AR','FA','HI','TH','ZH_TW','ZH_CN','JA','KO' );
-	$country_array = gcs_countries(); //list too long to put here. Returned from function below.
+	$country_array = google_calendar_shortcode_countries(); //list too long to put here. Returned from function below.
 
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
 	
-	if( isset( $atts[ 'title' ] ) ) $iframe .= 'title=' . $atts[ 'title' ] . '&amp;';
+	if( isset( $atts[ 'title' ] ) )
+		$iframe .= 'title=' . $atts[ 'title' ] . '&amp;';
 	if( isset( $atts[ 'show_title' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_title' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTitle=0&amp;';
-		else if( !in_array( strtoupper( $atts[ 'show_title' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_title. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_title' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$iframe .= 'showTitle=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_title' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$errors[] = 'Invalid value for show_title. Using default.';
 	}
 	if( isset( $atts[ 'show_date' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_date' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showDate=0&amp;';
-		else if( !in_array( strtoupper( $atts[ 'show_date' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_date. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_date' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$iframe .= 'showDate=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_date' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$errors[] = 'Invalid value for show_date. Using default.';
 	}
 	if( isset( $atts[ 'show_printicon' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showPrint=0&amp;';
-		else if( !in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_printicon. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$iframe .= 'showPrint=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_printicon' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$errors[] = 'Invalid value for show_printicon. Using default.';
 	}
 	if( isset( $atts[ 'show_tabs' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_tabs' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTabs=0&amp;';
-		else if( !in_array( strtoupper( $atts[ 'show_tabs' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_tabs. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_tabs' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$iframe .= 'showTabs=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_tabs' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$errors[] = 'Invalid value for show_tabs. Using default.';
 	}
 	if( isset( $atts[ 'show_calendarlist' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showCalendars=0&amp;';
-		else if( !in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_calendarlist. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$iframe .= 'showCalendars=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_calendarlist' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$errors[] = 'Invalid value for show_calendarlist. Using default.';
 	}
 	if( isset( $atts[ 'show_timezone' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '0', 'NO', 'FALSE' ) ) ) $iframe .= 'showTz=0&amp;';
-		else if( !in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '1', 'YES', 'TRUE' ) ) ) $errors[] = 'Invalid value for show_timezone. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$iframe .= 'showTz=0&amp;';
+		else if( !in_array( strtoupper( $atts[ 'show_timezone' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$errors[] = 'Invalid value for show_timezone. Using default.';
 	}
 	if( isset( $atts[ 'viewmode' ] ) ){
 		$viewmode = strtoupper( $atts[ 'viewmode' ] );
@@ -148,34 +170,47 @@ function gcs_calendar( $atts ){
 		}
 		$iframe .= 'mode=' . $viewmode . '&amp;';
 	}
-	if( isset( $atts[ 'height' ] ) ) $iframe .= 'height=' . $atts[ 'height' ] . '&amp;';
+	 if( isset( $atts[ 'height' ] ) ) {
+        if (preg_match('/^([0-9]+)(px)?$/i', $atts['height'], $matches)) {
+            $iframe .= 'height=' . $matches[1] . '&amp;';
+        } else {
+            $iframe .= 'height=600&amp;';
+			$atts[ 'height' ] = '600';
+            $errors[] = 'Invalid height. Using default.';
+        }
+    }
 	if( isset( $atts[ 'weekstart' ] ) ) {
 		if( in_array( strtoupper( $atts[ 'weekstart' ] ), $day_array ) || array_key_exists( $atts[ 'weekstart' ], $day_array ) ) { 
-			if( !is_numeric( $atts[ 'weekstart' ] ) ) $weekstart = array_search( strtoupper( $atts[ 'weekstart' ] ), $day_array );
+			if( !is_numeric( $atts[ 'weekstart' ] ) )
+				$weekstart = array_search( strtoupper( $atts[ 'weekstart' ] ), $day_array );
 			else $weekstart = $atts[ 'weekstart' ];
 			$iframe .= 'wkst=' . $weekstart . '&amp;';
 		} else $errors[] = 'Invalid value for weekstart. Using default.';
 	}
 	if( isset( $atts[ 'language' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'language' ] ), $language_array ) ) $iframe .= 'hl=' . $atts[ 'language' ] . '&amp;';
+		if( in_array( strtoupper( $atts[ 'language' ] ), $language_array ) )
+			$iframe .= 'hl=' . $atts[ 'language' ] . '&amp;';
 		else $errors[] = 'Invalid value for language. Using default.';
 	}
 	if( isset( $atts[ 'bgcolor' ] ) ){
 		$color = trim( $atts[ 'bgcolor' ], " #\t\n\r\0\x0B" ); //strip off '#' as well as the usual space, etc
 		$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
-		if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) $iframe .= 'bgcolor=%23' . $color . '&amp;'; //check to be sure it's a hex code. Otherwise don't use it and Google will default to white.
+		if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) )
+			$iframe .= 'bgcolor=%23' . $color . '&amp;'; //check to be sure it's a hex code. Otherwise don't use it and Google will default to white.
 		else $errors[] = 'Invalid value for bgcolor. Using default.';
 	}
 	//do each of the given calendar ID(s) and match with the given color(s)
 	$count = 0;
 	foreach( $id_array as $id ){ 
 		if( strpos( $id, 'google.com' ) > 10 ){
-			if( $count ) $iframe .= '&amp;';		
+			if( $count )
+				$iframe .= '&amp;';		
 			$iframe .= 'src=' . trim( $id );		
 			if( isset( $color_array[ $count ] ) ) {
 				$color = trim( $color_array[ $count ], " #\t\n\r\0\x0B" ); //strip off '#' as well as the usual space, etc
 				$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
-				if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) ) $iframe .= '&amp;color=%23' . $color;
+				if( preg_match( '/^[a-f0-9]{3}$|^[a-f0-9]{6}$/i', $color ) )
+					$iframe .= '&amp;color=%23' . $color;
 				else {
 					$errors[] = 'Invalid value for color. Using default.';
 					$iframe .= '&amp;color=%232952A3';
@@ -185,38 +220,54 @@ function gcs_calendar( $atts ){
 		}else $errors[] = "Invalid or missing Google Calendar ID";
 	}
 	if( isset( $atts[ 'timezone' ] ) ){
-		$timezone = str_replace( '%2F', '/', $atts[ 'timezone' ] ); //if user copy-pasted the %2F, convert it to a / for now so we can keep the array more readable
-		if( in_array( $timezone, $country_array ) ) $iframe .= '&amp;ctz=' . str_replace( '/', '%2F', $timezone );
+		$timezone = urldecode( $atts[ 'timezone' ] ); //if user copy-pasted the %2F, convert it to a / for now so we can keep the array more readable
+		if( in_array( $timezone, $country_array ) )
+			$iframe .= '&amp;ctz=' .  $timezone;
 		else $errors[] = 'Invalid Timezone';
 	}
 	$iframe .= '"';
 	
 	if( isset( $atts[ 'show_border' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) ) $iframe .= ' style=" border:solid 1px #777 "';
-		else if( !in_array( strtoupper( $atts[ 'show_border' ] ), array( '0', 'NO', 'FALSE' ) ) ) $errors[] = 'Invalid value for show_border. Using default.';
+		if( in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) )
+			$iframe .= ' style=" border:solid 1px #777 "';
+		else if( !in_array( strtoupper( $atts[ 'show_border' ] ), array( '0', 'NO', 'FALSE' ) ) )
+			$errors[] = 'Invalid value for show_border. Using default.';
 	}
-	$iframe .= ( isset( $atts[ 'width' ] ) ) ? ' width="' . $atts[ 'width' ] . '"' : ' width="100%"';
-	$iframe .= ( isset( $atts[ 'height' ] ) ) ? ' height="' . $atts[ 'height' ] . '"' : ' height="600px"';
+	if( isset( $atts[ 'width' ] ) ) {
+		if( preg_match( '/^[0-9]+(%|px|em)?$/', $atts[ 'width' ], $width_matches ) ) {
+			$iframe .= ' width="' . $width_matches[0] . '"';
+		}else{
+			$iframe .= ' width="100%"';
+			$errors[] = 'Invalid width. Using default.';
+		}
+	}
+	if( isset( $atts[ 'height' ] ) )
+		$iframe .= ' height="' . $atts[ 'height' ] . '"';
 	$iframe .= '></iframe>';
 	
 	echo $iframe;
 	
 	if( count( $errors ) ){
-		echo"\n" . '<div class="error gcs_errors">' . "\n";
+		echo"\n" . '<div class="error google-calendar-shortcode-errors">' . "\n";
 		echo"<small><strong>Error";
-		if( count( $errors ) > 1 ) echo"s";
+		if( count( $errors ) > 1 )
+			echo"s";
 		echo" in calendar configuration: </strong></small>";
-		if( count( $errors ) > 1 ) echo"<br />\n";
-		foreach( $errors as $error) echo"<small>" . $error . "</small><br />\n";
+		if( count( $errors ) > 1 )
+			echo"<br />\n";
+		foreach( $errors as $error)
+			echo"<small>" . $error . "</small><br />\n";
 		echo'</div><!--//.error gcs_errors-->' . "\n";
 	}
+	
+	//echo'<p>*' . get_stylesheet() . '*</p>';
 
 	$output = ob_get_contents();
 	ob_end_clean();
 	return $output;
 }
 
-function gcs_countries(){
+function google_calendar_shortcode_countries(){
 	return array(
 		'Pacific/Niue',
 		'Pacific/Pago_Pago',
