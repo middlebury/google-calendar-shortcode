@@ -17,7 +17,7 @@ function google_calendar_shortcodes_add_styles(){
 add_filter( 'content_save_pre', 'google_calendar_shortcode_replace_iframe' );
 function google_calendar_shortcode_replace_iframe( $content ){
 	
-    preg_match_all('#(?:<|&lt;)iframe src=\\\"https://www.google.com/calendar/embed.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
+    preg_match_all('#(?:<|&lt;)iframe src=\\\"https://www.google.com/calendar/.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
 	foreach( $matches[0] as $match ) {
 		$html = html_entity_decode( stripslashes( $match ) );
 		$dom = new DOMDocument();
@@ -66,8 +66,11 @@ function google_calendar_shortcode_replace_iframe( $content ){
 		}
 		if( strlen( $iframe->getAttribute( 'width' ) ) )
 			$shortcode .= ' width="' . $iframe->getAttribute( 'width' ) . '"';
-		if( isset( $var_array[ 'height' ] ) )
+		if( isset( $var_array[ 'height' ] ) ) {
 			$shortcode .= ' height="' . $var_array[ 'height' ] . '"';
+		}else if( strlen( $iframe->getAttribute( 'height' ) ) ) {
+			$shortcode .= ' height="' . $iframe->getAttribute( 'height' ) . '"';
+		}
 		if( isset( $var_array[ 'mode' ] ) )
 			$shortcode .= ' viewmode="' . $var_array[ 'mode' ] . '"';
 		if( isset( $var_array[ 'title' ] ) )
@@ -115,8 +118,10 @@ function google_calendar_shortcode( $atts ){
 	$ids = $atts[ 'id' ];
 	$id_array = explode( ',', $ids);
 	
-	$colors = $atts[ 'color' ];
-	$color_array = explode( ',', $colors);
+	if( isset( $atts[ 'color' ] ) ) {
+		$colors = $atts[ 'color' ];
+		$color_array = explode( ',', $colors);
+	}
 
 	$day_array = array( '1' => 'SUNDAY', '2' => 'MONDAY', '3' => 'TUESDAY', '4' => 'WEDNESDAY', '5' => 'THURSDAY', '6' => 'FRIDAY', '7' => 'SATURDAY' );
 	$language_array = array( 'ID','CA','CS','DA','DE','EN_GB','EN','ES','ES_419','FIL','FR','HR','IT','LV','LT','HU','NL','NO','PL','PT_BR','PT_PT','RO','SK','SL','FI','SV','TR','VI','EL','RU','SR','UK','BG','IW','AR','FA','HI','TH','ZH_TW','ZH_CN','JA','KO' );
@@ -170,7 +175,7 @@ function google_calendar_shortcode( $atts ){
 		}
 		$iframe .= 'mode=' . $viewmode . '&amp;';
 	}
-	 if( isset( $atts[ 'height' ] ) ) {
+	if( isset( $atts[ 'height' ] ) ) {
         if (preg_match('/^([0-9]+)(px)?$/i', $atts['height'], $matches)) {
             $iframe .= 'height=' . $matches[1] . '&amp;';
         } else {
@@ -178,7 +183,9 @@ function google_calendar_shortcode( $atts ){
 			$atts[ 'height' ] = '600';
             $errors[] = 'Invalid height. Using default.';
         }
-    }
+    }else{
+		$iframe .= 'height=600&amp;';
+	}
 	if( isset( $atts[ 'weekstart' ] ) ) {
 		if( in_array( strtoupper( $atts[ 'weekstart' ] ), $day_array ) || array_key_exists( $atts[ 'weekstart' ], $day_array ) ) { 
 			if( !is_numeric( $atts[ 'weekstart' ] ) )
@@ -228,10 +235,16 @@ function google_calendar_shortcode( $atts ){
 	$iframe .= '"';
 	
 	if( isset( $atts[ 'show_border' ] ) ) {
-		if( in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) )
+		if( in_array( strtoupper( $atts[ 'show_border' ] ), array( '1', 'YES', 'TRUE' ) ) ) {
 			$iframe .= ' style=" border:solid 1px #777 "';
-		else if( !in_array( strtoupper( $atts[ 'show_border' ] ), array( '0', 'NO', 'FALSE' ) ) )
+		}else if( in_array( strtoupper( $atts[ 'show_border' ] ), array( '0', 'NO', 'FALSE' ) ) ){
+			$iframe .= ' style=" border:0 "';
+		}else{
+			$iframe .= ' style=" border:0 "';
 			$errors[] = 'Invalid value for show_border. Using default.';
+		}
+	}else{
+		$iframe .= ' style=" border:0 "';
 	}
 	if( isset( $atts[ 'width' ] ) ) {
 		if( preg_match( '/^[0-9]+(%|px|em)?$/', $atts[ 'width' ], $width_matches ) ) {
@@ -240,9 +253,14 @@ function google_calendar_shortcode( $atts ){
 			$iframe .= ' width="100%"';
 			$errors[] = 'Invalid width. Using default.';
 		}
+	}else{
+		$iframe .= ' width="100%"';
 	}
-	if( isset( $atts[ 'height' ] ) )
+	if( isset( $atts[ 'height' ] ) ) {
 		$iframe .= ' height="' . $atts[ 'height' ] . '"';
+	}else{
+		$iframe .= ' height="600"';
+	}
 	$iframe .= '></iframe>';
 	
 	echo $iframe;
