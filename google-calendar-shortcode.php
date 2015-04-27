@@ -209,8 +209,8 @@ function google_calendar_shortcode( $atts ){
 	//do each of the given calendar ID(s) and match with the given color(s)
 	$count = 0;
 	foreach( $id_array as $id ){ 
-		if( strpos( $id, 'google.com' ) > 10 ){
 			if( $count )
+		if ( strlen( $id ) > 0 ) {
 				$iframe .= '&amp;';		
 			$iframe .= 'src=' . trim( $id );		
 			if( isset( $color_array[ $count ] ) ) {
