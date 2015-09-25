@@ -10,14 +10,12 @@ License: Gnu General Public License V3 or later (GPL v3)
 add_action( 'wp_enqueue_scripts', 'google_calendar_shortcodes_add_styles' );
 function google_calendar_shortcodes_add_styles(){
 	global $wp_styles;
-
 	wp_add_inline_style( $wp_styles->queue[0], 'div.google-calendar-shortcode-errors strong{ color: red }' );
 }
 
 add_filter( 'content_save_pre', 'google_calendar_shortcode_replace_iframe' );
 function google_calendar_shortcode_replace_iframe( $content ) {
-
-    preg_match_all('#(?:<|&lt;)iframe src=\\\"https?://www.google.com/calendar/.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
+	preg_match_all('#(?:<|&lt;)iframe src=\\\"https?://www.google.com/calendar/.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
 	foreach ( $matches[0] as $match ) {
 		$html = html_entity_decode( stripslashes( $match ) );
 		$dom = new DOMDocument();
@@ -126,7 +124,6 @@ function google_calendar_shortcode_replace_iframe( $content ) {
 
 add_shortcode( 'google_calendar', 'google_calendar_shortcode' );
 function google_calendar_shortcode( $atts ) {
-
 	ob_start();
 
 	foreach ( $atts as $key => $value ) {
@@ -218,14 +215,14 @@ function google_calendar_shortcode( $atts ) {
 		$iframe .= 'mode=' . $viewmode . '&amp;';
 	}
 	if ( isset( $atts['height'] ) ) {
-        if ( preg_match( '/^([0-9]+)(px)?$/i', $atts['height'], $matches ) ) {
-            $iframe .= 'height=' . $matches[1] . '&amp;';
-        } else {
-            $iframe .= 'height=600&amp;';
+		if ( preg_match( '/^([0-9]+)(px)?$/i', $atts['height'], $matches ) ) {
+			$iframe .= 'height=' . $matches[1] . '&amp;';
+		} else {
+			$iframe .= 'height=600&amp;';
 			$atts['height'] = '600';
-            $errors[] = 'Invalid height. Using default.';
-        }
-    } else {
+			$errors[] = 'Invalid height. Using default.';
+		}
+	} else {
 		$iframe .= 'height=600&amp;';
 	}
 	if ( isset( $atts['weekstart'] ) ) {
