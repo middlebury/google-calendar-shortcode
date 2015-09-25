@@ -20,21 +20,21 @@ All Google Calendar iframe attributes available at the time of this writing are 
 
 <table>
 <tr><th>shortcode parameter</td><th>Google Calendar IFRAME Parameter</th></tr>
-<tr><th>width</th><th>width</th></tr>
-<tr><th>height</th><th>height</th></tr>
-<tr><th>viewmode</th><th>viewmode</th></tr>
-<tr><th>title</th><th>title</th></tr>
-<tr><th>show_title</th><th>showTitle</th></tr>
-<tr><th>show_date</th><th>showDate</th></tr>
-<tr><th>show_printicon</th><th>showPrint</th></tr>
-<tr><th>show_tabs</th><th>showTabs</th></tr>
-<tr><th>show_calendarlist</th><th>showCalendars</th></tr>
-<tr><th>show_timezone</th><th>showTz</th></tr>
-<tr><th>weekstart</th><th>wkst</th></tr>
-<tr><th>language</th><th>hl</th></tr>
-<tr><th>bgcolor</th><th>bgcolor</th></tr>
-<tr><th>show_border="true"</th><th>style="border:solid"</th></tr>
-<tr><th>timezone</th><th>ctz</th></tr>
+<tr><td>widtd</td><td>widtd</td></tr>
+<tr><td>height</td><td>height</td></tr>
+<tr><td>viewmode</td><td>viewmode</td></tr>
+<tr><td>title</td><td>title</td></tr>
+<tr><td>show_title</td><td>showTitle</td></tr>
+<tr><td>show_date</td><td>showDate</td></tr>
+<tr><td>show_printicon</td><td>showPrint</td></tr>
+<tr><td>show_tabs</td><td>showTabs</td></tr>
+<tr><td>show_calendarlist</td><td>showCalendars</td></tr>
+<tr><td>show_timezone</td><td>showTz</td></tr>
+<tr><td>weekstart</td><td>wkst</td></tr>
+<tr><td>language</td><td>hl</td></tr>
+<tr><td>bgcolor</td><td>bgcolor</td></tr>
+<tr><td>show_border="true"</td><td>style="border:solid"</td></tr>
+<tr><td>timezone</td><td>ctz</td></tr>
 </table>
 
 == Installation ==
