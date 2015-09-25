@@ -16,7 +16,7 @@ function google_calendar_shortcodes_add_styles(){
 
 add_filter( 'content_save_pre', 'google_calendar_shortcode_replace_iframe' );
 function google_calendar_shortcode_replace_iframe( $content ) {
-	
+
     preg_match_all('#(?:<|&lt;)iframe src=\\\"https?://www.google.com/calendar/.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
 	foreach ( $matches[0] as $match ) {
 		$html = html_entity_decode( stripslashes( $match ) );
@@ -43,7 +43,7 @@ function google_calendar_shortcode_replace_iframe( $content ) {
 			if( strpos( $value, '%23' ) === 0 ) {
 				$colors[ $key ] = substr( $value, 3 );
 			}
-		}		
+		}
 
 		$shortcode = '[google_calendar';
 		if ( count( $sources ) > 0 ) {
@@ -67,7 +67,7 @@ function google_calendar_shortcode_replace_iframe( $content ) {
 				}
 				$shortcode .= $color;
 				$count ++;
-			} 
+			}
 			$shortcode .= '"';
 		}
 		if ( strlen( $iframe->getAttribute( 'width' ) ) ) {
@@ -141,7 +141,7 @@ function google_calendar_shortcode( $atts ) {
 	} else {
 		$errors[] = "Missing Google Calendar ID";
 	}
-	
+
 	if ( isset( $atts['color'] ) ) {
 		$colors = $atts['color'];
 		$color_array = explode( ',', $colors );
@@ -163,7 +163,7 @@ function google_calendar_shortcode( $atts ) {
 	$country_array = google_calendar_shortcode_countries(); //list too long to put here. Returned from function below.
 
 	$iframe = '<iframe src="https://www.google.com/calendar/embed?';
-	
+
 	if (  isset( $atts['title'] ) ) {
 		$iframe .= 'title=' . $atts['title'] . '&amp;';
 	}
@@ -229,10 +229,10 @@ function google_calendar_shortcode( $atts ) {
 		$iframe .= 'height=600&amp;';
 	}
 	if ( isset( $atts['weekstart'] ) ) {
-		if ( in_array( strtoupper( $atts['weekstart'] ), $day_array ) || array_key_exists( $atts['weekstart'], $day_array ) ) { 
+		if ( in_array( strtoupper( $atts['weekstart'] ), $day_array ) || array_key_exists( $atts['weekstart'], $day_array ) ) {
 			if ( !is_numeric( $atts['weekstart'] ) ) {
 				$weekstart = array_search( strtoupper( $atts['weekstart'] ), $day_array );
-			} else { 
+			} else {
 				$weekstart = $atts['weekstart'];
 			}
 			$iframe .= 'wkst=' . $weekstart . '&amp;';
@@ -261,8 +261,8 @@ function google_calendar_shortcode( $atts ) {
 	foreach( $id_array as $id ) {
 		if ( strlen( $id ) > 0 ) {
 			if ( $count )
-				$iframe .= '&amp;';		
-			$iframe .= 'src=' . trim( $id );		
+				$iframe .= '&amp;';
+			$iframe .= 'src=' . trim( $id );
 			if ( isset( $color_array[ $count ] ) ) {
 				$color = trim( $color_array[ $count ], " #\t\n\r\0\x0B" ); //strip off '#' as well as the usual space, etc
 				$color = str_replace( '%23', '', $color ); //if user copy-pasted the %23 from Google, strip it off as well
@@ -287,7 +287,7 @@ function google_calendar_shortcode( $atts ) {
 		}
 	}
 	$iframe .= '"';
-	
+
 	if ( isset( $atts[ 'show_border' ] ) ) {
 		if ( in_array( strtoupper( $atts['show_border'] ), array( '1', 'YES', 'TRUE' ) ) ) {
 			$iframe .= ' style=" border:solid 1px #777 "';
@@ -316,9 +316,9 @@ function google_calendar_shortcode( $atts ) {
 		$iframe .= ' height="600"';
 	}
 	$iframe .= '></iframe>';
-	
+
 	echo $iframe;
-	
+
 	if ( count( $errors ) ) {
 		echo "\n" . '<div class="error google-calendar-shortcode-errors">' . "\n";
 		echo "<small><strong>Error";
@@ -332,7 +332,7 @@ function google_calendar_shortcode( $atts ) {
 		}
 		echo '</div><!--//.error gcs_errors-->' . "\n";
 	}
-	
+
 	$output = ob_get_contents();
 	ob_end_clean();
 	return $output;
