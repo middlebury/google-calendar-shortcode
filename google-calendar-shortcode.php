@@ -1,8 +1,10 @@
 <?php
 /*
 Plugin Name: Google Calendar Shortcode
-Description: Enables using a shortcode to display a Google Calendar
+Plugin URI: https://github.com/middlebury/google-calendar-shortcode
+Description: Insert a Google Calendars via a shortcode; automatically convert calendar iframe embed-code to shortcode syntax.
 Author: Middlebury College, Eli Madden
+Author URI: https://github.com/middlebury/
 Version: 1.0
 Copyright: 2015 President and Fellows of Middlebury College
 License: Gnu General Public License V3 or later (GPL v3)
