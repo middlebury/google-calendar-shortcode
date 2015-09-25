@@ -439,5 +439,3 @@ function google_calendar_shortcode_countries() {
 		'Europe/Lisbon'
 	);
 }
-
-?>
