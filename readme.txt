@@ -1,4 +1,5 @@
 === Google Calendar Shortcode ===
+
 Contributors: Eli Madden, adamfranco
 Tags: google, calendar
 Requires at least: 3.3
@@ -34,7 +35,7 @@ All Google Calendar iframe attributes available at the time of this writing are 
 <tr><th>bgcolor</th><th>bgcolor</th></tr>
 <tr><th>show_border="true"</th><th>style="border:solid"</th></tr>
 <tr><th>timezone</th><th>ctz</th></tr>
-
+</table>
 
 == Installation ==
 
