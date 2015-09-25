@@ -37,6 +37,8 @@ All Google Calendar iframe attributes available at the time of this writing are 
 <tr><td>timezone</td><td>ctz</td></tr>
 </table>
 
+More usage details can be found in [the Middlebury College wiki](http://mediawiki.middlebury.edu/wiki/LIS/Help:WordPress_Plugins#Google_Calendar_Shortcode)
+
 == Installation ==
 
 1. Unzip the `google-calendar-shortcode.zip` into your `/wp-content/plugins/` directory
