@@ -20,7 +20,7 @@ All Google Calendar iframe attributes available at the time of this writing are 
 
 <table>
 <tr><th>shortcode parameter</td><th>Google Calendar IFRAME Parameter</th></tr>
-<tr><td>widtd</td><td>widtd</td></tr>
+<tr><td>width</td><td>width</td></tr>
 <tr><td>height</td><td>height</td></tr>
 <tr><td>viewmode</td><td>viewmode</td></tr>
 <tr><td>title</td><td>title</td></tr>
