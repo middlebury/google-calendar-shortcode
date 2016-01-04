@@ -17,7 +17,7 @@ function google_calendar_shortcodes_add_styles(){
 
 add_filter( 'content_save_pre', 'google_calendar_shortcode_replace_iframe' );
 function google_calendar_shortcode_replace_iframe( $content ) {
-	preg_match_all('#(?:<|&lt;)iframe src=\\\"https?://www.google.com/calendar/.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
+	preg_match_all('#(?:<|&lt;)iframe src=\\\"https?://(?:www|calendar).google.com/calendar/.+(?:></iframe>|&gt;&lt;/iframe&gt;)#U', $content, $matches);
 	foreach ( $matches[0] as $match ) {
 		$html = html_entity_decode( stripslashes( $match ) );
 		$dom = new DOMDocument();
