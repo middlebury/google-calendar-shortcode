@@ -9,11 +9,6 @@ Version: 1.0
 Copyright: 2015 President and Fellows of Middlebury College
 License: Gnu General Public License V3 or later (GPL v3)
 */
-add_action( 'wp_enqueue_scripts', 'google_calendar_shortcodes_add_styles' );
-function google_calendar_shortcodes_add_styles(){
-	global $wp_styles;
-	wp_add_inline_style( $wp_styles->queue[0], 'div.google-calendar-shortcode-errors strong{ color: red }' );
-}
 
 add_filter( 'content_save_pre', 'google_calendar_shortcode_replace_iframe' );
 function google_calendar_shortcode_replace_iframe( $content ) {
@@ -320,7 +315,7 @@ function google_calendar_shortcode( $atts ) {
 
 	if ( count( $errors ) ) {
 		echo "\n" . '<div class="error google-calendar-shortcode-errors">' . "\n";
-		echo "<small><strong>Error";
+		echo '<small><strong style="color:red">Error';
 		if ( count( $errors ) > 1 )
 			echo "s";
 		echo " in calendar configuration: </strong></small>";
