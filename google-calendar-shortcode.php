@@ -126,7 +126,9 @@ function google_calendar_shortcode( $atts ) {
 	foreach ( $atts as $key => $value ) {
 		$atts[ $key ] = strip_tags( $value );
 	}
-	$atts['title'] = urlencode( html_entity_decode( $atts[ 'title'] ) );
+	if (  isset( $atts['title'] ) ) {
+		$atts['title'] = urlencode( html_entity_decode( $atts[ 'title'] ) );
+	}
 	$errors = array();
 
 	if ( isset( $atts['id'] ) ) {
